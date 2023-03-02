@@ -26,6 +26,15 @@ const generatePDF = async (name) => {
 
   // Load a PDFDocument from the existing PDF bytes
   const pdfDoc = await PDFDocument.load(existingPdfBytes);
+  pdfDoc.registerFontkit(fontkit);
+
+  //get font
+  const fontBytes = await fetch("./Arial-Unicode.ttf").then((res) =>
+    res.arrayBuffer()
+  );
+
+  // Embed our custom font in the document
+  const ArialFont = await pdfDoc.embedFont(fontBytes);
 
   // Get the first page of the document
   const pages = pdfDoc.getPages();
@@ -35,11 +44,12 @@ const generatePDF = async (name) => {
   const { width, height } = firstPage.getSize();
   const fontSize = 40;
   const text = name;
-  const x = width / 2 - pdfDoc.widthOfString(text) / 2;
+  const x = width / 2 - ArialFont.widthOfTextAtSize(text, fontSize) / 2;
   const y = height / 2 - fontSize / 2;
   firstPage.drawText(text, {
     x,
     y,
+    font: ArialFont,
     size: fontSize,
     color: rgb(0.2, 0.84, 0.67),
     lineHeight: 1.5,
